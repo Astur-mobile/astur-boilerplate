@@ -22,10 +22,9 @@
     "codegen:ios:real": "npx astur-mobile codegen --ios --real --device 00008030-000548220EF0802E --app ./assets/astur.demo.ios.ipa --app-id com.astur.demo"
   },
   "devDependencies": {
-    "@astur-mobile/test": "next",
-    "astur-mobile": "next",
-    "@playwright/test": "^1.48.0",
-    "@types/node": "^22.0.0",
-    "typescript": "^5.6.0"
+    "@astur-mobile/test": "latest",
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.9.2",
+    "typescript": "^6.0.3"
   }
 }
