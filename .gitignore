@@ -1,0 +1,9 @@
+node_modules/
+test-results/
+playwright-report/
+.playwright-cli/
+*.tsbuildinfo
+.DS_Store
+
+# Demo app binaries — download from Astur-mobile/astur-demoApp and drop them here.
+assets/
