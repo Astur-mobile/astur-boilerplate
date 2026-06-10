@@ -2,7 +2,7 @@
   "name": "astur-boilerplate",
   "private": true,
   "type": "module",
-  "description": "Starter Astur mobile test suites (Android + iOS) using @astur/test and the astur-mobile CLI.",
+  "description": "Starter Astur mobile test suites (Android + iOS) using @astur-mobile/test and the astur-mobile CLI.",
   "scripts": {
     "help": "node -e \"console.log(['Available commands:', '  npm run doctor', '  npm run devices', '  npm run devices:android', '  npm run devices:ios', '  npm run test:android', '  npm run test:ios', '  npm run test:ios:real', '  npm run test:parallel', '  npm run test:android:spec -- android-native/login.test.ts', '  npm run test:ios:spec -- android-native/login.test.ts', '  npm run test:parallel:spec -- android-native/login.test.ts', '  npm run codegen:android:emulator', '  npm run codegen:ios:simulator'].join('\\n'))\"",
     "doctor": "npx astur-mobile doctor",
@@ -22,8 +22,8 @@
     "codegen:ios:real": "npx astur-mobile codegen --ios --real --device 00008030-000548220EF0802E --app ./assets/astur.demo.ios.ipa --app-id com.astur.demo"
   },
   "devDependencies": {
-    "@astur/test": "latest",
-    "astur-mobile": "latest",
+    "@astur-mobile/test": "next",
+    "astur-mobile": "next",
     "@playwright/test": "^1.48.0",
     "@types/node": "^22.0.0",
     "typescript": "^5.6.0"
