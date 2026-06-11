@@ -5,5 +5,7 @@ playwright-report/
 *.tsbuildinfo
 .DS_Store
 
-# Demo app binaries — download from Astur-mobile/astur-demoApp and drop them here.
-assets/
+# Demo app: the Android APK and zipped iOS simulator build are committed so the
+# suite is clone-and-run. The unpacked .app and the real-device .ipa stay out.
+assets/Astur.app/
+assets/*.ipa

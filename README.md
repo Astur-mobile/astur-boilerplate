@@ -15,16 +15,15 @@ npx astur-mobile doctor
 | --- | --- |
 | `android-native/` | Android suites: login, forms, slider, swipe, drag & drop, tap laboratory, webview, plus a parallel config |
 | `ios-native/` | iOS config that runs the shared Android-authored specs on a simulator/device |
-| `assets/` | Where the demo app binaries go (git-ignored — see below) |
+| `assets/` | Demo app binaries — committed so you can run immediately |
 
 ## Demo app
 
-These suites target the Astur demo app. Download the build artifacts from
-[`Astur-mobile/astur-demoApp`](https://github.com/Astur-mobile/astur-demoApp)
-and place them in `assets/`:
+These suites target the Astur demo app, which ships in `assets/`:
 
-- `assets/astur.demo.android.apk`
-- `assets/Astur.app` (iOS simulator) and/or `assets/astur.demo.ios.ipa` (real device)
+- `assets/astur.demo.android.apk` — Android (used as-is)
+- `assets/astur.demo.ios.simulator.zip` — iOS simulator build. Unzip it once:
+  `unzip -o assets/astur.demo.ios.simulator.zip -d assets` → `assets/Astur.app`
 
 To test your **own** app instead, change `use.astur.app` in the relevant
 `playwright.config.ts` and update the locators in the specs.
@@ -46,6 +45,20 @@ iOS device selection is environment-driven:
 ASTUR_IOS_DEVICE_KIND=real ASTUR_IOS_DEVICE_ID=<udid> npm run test:ios
 ASTUR_IOS_APP_PATH=assets/astur.demo.ios.ipa npm run test:ios:real
 ```
+
+## Run from VS Code (Playwright play button)
+
+Astur is built on Playwright Test, so the **VS Code Playwright extension** works
+out of the box — no separate CLI command needed. Open the **Testing** panel, or
+click the green **▶** in the gutter next to a `test(...)`, to run or debug a spec
+directly against a connected device or simulator. Fixtures, projects, retries,
+and the trace viewer all behave like normal Playwright.
+
+This is often the fastest loop for a single spec. The `npm run …` scripts above
+are the equivalent for the terminal/CI.
+
+> If `npm run doctor` reports `astur-mobile` not found, run `npm install` first —
+> the CLI ships as the `astur-mobile` package on npm.
 
 ## License
 
