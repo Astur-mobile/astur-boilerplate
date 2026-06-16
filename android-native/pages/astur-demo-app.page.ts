@@ -142,26 +142,25 @@ export class BottomNavigation {
       return;
     }
 
-    const screen = this.screenLocator(tab);
-    if (await screen.isVisible({ timeout: tab === 'home' ? 4_000 : 500 })) {
+    if (await this.screenVisible(tab, tab === 'home' ? 4_000 : 500)) {
       return;
     }
 
     if (isIos(this.device)) {
       await this.tabLocator(tab).tap({ timeout: 4_000 });
-      await screen.waitForVisible({ timeout: 4_000 });
+      await this.waitForScreen(tab, 4_000);
       return;
     }
 
     if (await this.menuNavLocator('home').isVisible({ timeout: 200 })) {
       await this.menuNavLocator(tab).tap({ timeout: 4_000 });
-      await screen.waitForVisible({ timeout: 4_000 });
+      await this.waitForScreen(tab, 4_000);
       return;
     }
 
     try {
       await this.tabLocator(tab).tap({ timeout: 4_000 });
-      await screen.waitForVisible({ timeout: 4_000 });
+      await this.waitForScreen(tab, 4_000);
       return;
     } catch {
       await this.menu.tap({ timeout: 4_000 });
@@ -169,7 +168,7 @@ export class BottomNavigation {
       await this.menuNavLocator(tab).tap({ timeout: 4_000 });
     }
 
-    await screen.waitForVisible({ timeout: 4_000 });
+    await this.waitForScreen(tab, 4_000);
   }
 
   private tabLocator(tab: DemoTab): MobileLocator {
@@ -180,8 +179,26 @@ export class BottomNavigation {
     return this.device.getById(`menu-nav-${tab}`);
   }
 
-  private screenLocator(tab: DemoTab): MobileLocator {
-    return isIos(this.device) ? this.device.getByText(screenTitles[tab]) : this.device.getById(`screen-${tab}`);
+  // The Android builds (React Native + Flutter) and the Flutter iOS build expose
+  // a stable `screen-<tab>` identifier. The React Native iOS build instead
+  // surfaces a screen only by its title text, so on iOS accept either — one
+  // shared suite then drives all four app builds without per-build forks.
+  private screenCandidates(tab: DemoTab): MobileLocator[] {
+    const byId = this.device.getById(`screen-${tab}`);
+    return isIos(this.device) ? [byId, this.device.getByText(screenTitles[tab])] : [byId];
+  }
+
+  private async screenVisible(tab: DemoTab, timeout: number): Promise<boolean> {
+    for (const locator of this.screenCandidates(tab)) {
+      if (await locator.isVisible({ timeout }).catch(() => false)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private async waitForScreen(tab: DemoTab, timeout: number): Promise<void> {
+    await waitForAnyVisible(this.screenCandidates(tab), timeout, `the ${tab} screen`);
   }
 }
 
@@ -217,21 +234,18 @@ export class HomePage {
   }
 
   async revealTapLaboratory(): Promise<void> {
-    if (!isIos(this.device)) {
-      await this.tapLabCard.scrollIntoView({ direction: 'down', maxScrolls: 5 });
-      return;
-    }
-
-    // iOS-specific: the tap counters render in a row just below the tap target.
-    // It is not enough for the target to be "visible" — it must have room
-    // beneath it in the viewport so the counters are on screen too, because
-    // iosTapLabCounters() only reads counters that the tree reports as visible.
-    // Do NOT simplify this to a plain scrollIntoView: that leaves the counters
-    // clipped at the bottom edge and the counter read fails.
+    // The tap counters render in a row just below the tap target. It is not
+    // enough for the target to be "visible" — it must have room beneath it in the
+    // viewport so the counters are on screen too (and the target sits clear of the
+    // bottom navigation bar so taps land on it). This matters on iOS and on the
+    // Flutter Android driver alike, which only expose on-screen nodes — a plain
+    // scrollIntoView(card) leaves the counters off screen and the target under the
+    // nav bar. (On native Android the off-screen counters are already in the tree,
+    // so this just scrolls a little further, harmlessly.)
     const viewport = await this.device.viewport();
-    const bottomLimit = viewport.y + viewport.height - 140;
+    const bottomLimit = viewport.y + viewport.height - 180;
 
-    for (let attempt = 0; attempt < 5; attempt += 1) {
+    for (let attempt = 0; attempt < 6; attempt += 1) {
       const target = await this.tapTarget.snapshot({ timeout: 400 }).catch(() => undefined);
       if (target?.visible && target.bounds.y + target.bounds.height <= bottomLimit) {
         return;
@@ -266,17 +280,21 @@ export class HomePage {
   }
 
   private async iosTapLabCounters(): Promise<TapLabCounters> {
-    // Read the accessibility tree once and locate each counter by its visible
-    // label, then the digit rendered beneath it — the same geometry approach
-    // the Android path uses. This replaces a multi-selector findMany scan that
-    // times out on the iOS simulator, where XCTest re-enumerates every static
-    // text on the (text-heavy) screen for each selector.
-    const nodes = flattenTree(await this.device.tree()).filter((node) => node.visible);
+    // Read each counter by its stable id. The Flutter iOS accessibility tree
+    // merges the "SINGLE TAPS / 0" label+digit pairs into the card's label, so the
+    // geometry approach the Android path uses cannot see the discrete digits — but
+    // the value pills keep their own identified nodes (home-tap-*-count), whose
+    // label is the current count.
+    const readCount = async (id: string): Promise<number> => {
+      const snapshot = await this.device.getById(id).snapshot({ timeout: 4_000 });
+      const digits = (snapshot.value ?? snapshot.text ?? snapshot.label ?? '').replace(/\D+/g, '');
+      return digits.length ? Number(digits) : 0;
+    };
 
     return {
-      singleTaps: readCounterFromNodes(nodes, 'SINGLE TAPS'),
-      doubleTaps: readCounterFromNodes(nodes, 'DOUBLE TAPS'),
-      longPresses: readCounterFromNodes(nodes, 'LONG PRESS')
+      singleTaps: await readCount('home-tap-single-count'),
+      doubleTaps: await readCount('home-tap-double-count'),
+      longPresses: await readCount('home-tap-long-press-count')
     };
   }
 
@@ -344,7 +362,16 @@ export class LoginPage {
   async enterCredentials(email: string, password: string): Promise<void> {
     await this.email.fill(email);
     await this.password.fill(password);
-    await this.device.keyboard.dismiss().catch(() => this.device.back());
+    // Dismiss the soft keyboard so the submit button below the form is reachable.
+    // The Flutter driver hides the IME by clearing the Dart primary focus (no Back
+    // press), so this can't pop the route or background the app.
+    await this.device.keyboard.dismiss().catch(() => undefined);
+    // Typing into the password field focuses it and scrolls the form up to keep
+    // it above the soft keyboard, which can push the email field off the top of
+    // the viewport. The Flutter driver only exposes on-screen nodes, so bring the
+    // email field back into view before any value assertion. This is a no-op on
+    // native Android/iOS, where the field is already in the tree.
+    await this.email.scrollIntoView({ direction: 'up', maxScrolls: 4 }).catch(() => undefined);
   }
 
   async signIn(email: string, password: string): Promise<void> {
@@ -488,6 +515,15 @@ export class FormsPage {
   }
 
   private async sliderTrackBounds(): Promise<Bounds> {
+    // Prefer the dedicated track id: it is the actual swipe surface and is exposed
+    // on every build (React Native, Flutter Android, Flutter iOS). On Flutter iOS
+    // the slider has no ARIA "slider" role and the 0%/100% labels are merged into
+    // the card label, so the role/label fallbacks below cannot resolve it.
+    const trackSnapshot = await this.device.getById('forms-slider-track').snapshot({ timeout: 500 }).catch(() => undefined);
+    if (trackSnapshot?.visible && trackSnapshot.bounds.width > 40) {
+      return trackSnapshot.bounds;
+    }
+
     const roleSnapshot = await this.slider.snapshot({ timeout: 500 }).catch(() => undefined);
     if (roleSnapshot?.visible && roleSnapshot.bounds.width > 40) {
       return roleSnapshot.bounds;
@@ -789,7 +825,11 @@ function isIos(device: AsturDevice): boolean {
   return device.deviceInfo.platform === 'ios';
 }
 
-async function waitForAnyVisible(locators: MobileLocator[], timeoutMs: number): Promise<void> {
+async function waitForAnyVisible(
+  locators: MobileLocator[],
+  timeoutMs: number,
+  label = 'the Astur demo app shell'
+): Promise<void> {
   const deadline = Date.now() + timeoutMs;
 
   while (Date.now() <= deadline) {
@@ -802,7 +842,7 @@ async function waitForAnyVisible(locators: MobileLocator[], timeoutMs: number): 
     await delay(250);
   }
 
-  throw new Error(`Timed out waiting ${timeoutMs}ms for the Astur demo app shell.`);
+  throw new Error(`Timed out waiting ${timeoutMs}ms for ${label}.`);
 }
 
 function delay(ms: number): Promise<void> {
