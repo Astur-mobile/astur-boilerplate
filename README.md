@@ -21,9 +21,13 @@ npx astur-mobile doctor
 
 These suites target the Astur demo app, which ships in `assets/`:
 
-- `assets/astur.demo.android.apk` — Android (used as-is)
+- `assets/astur.demo.android.apk` — Android (React Native build, used as-is)
 - `assets/astur.demo.ios.simulator.zip` — iOS simulator build. Unzip it once:
   `unzip -o assets/astur.demo.ios.simulator.zip -d assets` → `assets/Astur.app`
+- `assets/astur.demo.android_flutter.apk` — Android (Flutter build)
+- `assets/astur.demo.ios.simulator_flutter.zip` — iOS simulator (Flutter build).
+  Unzip once: `unzip -o assets/astur.demo.ios.simulator_flutter.zip -d assets` →
+  `assets/Runner.app`
 
 To test your **own** app instead, change `use.astur.app` in the relevant
 `playwright.config.ts` and update the locators in the specs.
@@ -38,6 +42,36 @@ npm run test:ios                # iOS simulator (iPhone 16 by default)
 npm run test:parallel           # Android + iOS concurrently
 npm run codegen:android:emulator  # record a new spec
 ```
+
+### Flutter
+
+The same specs drive the Flutter build of the demo app:
+
+```bash
+npm run test:ios:flutter        # iOS simulator (uses assets/Runner.app)
+ASTUR_FLUTTER_PROJECT=/path/to/flutter-app npm run test:android:flutter
+```
+
+Android Flutter reads the live widget tree through the Dart VM service, so it
+needs `ASTUR_FLUTTER_PROJECT` (the Flutter app's source dir with `pubspec.yaml`)
+and the `flutter` CLI on `PATH`. iOS Flutter reads the XCUITest accessibility
+tree — no extra setup beyond `assets/Runner.app`. A few specs are
+platform-limited on iOS Flutter (drag-and-drop, media-upload, webview).
+
+### WebViews (DOM)
+
+In-app WebViews are automated at the DOM level with `device.webContext()` — the
+same API for Flutter and React Native:
+
+```ts
+const web = await device.webContext();
+await web.getById('astur-email').fill('qa@astur.dev');
+await web.getByTestId('astur-submit').tap();
+```
+
+Works on Android (Chromium WebView/CDP) and real iOS devices
+(`brew install ios-webkit-debug-proxy`, `WKWebView.isInspectable = true`). The
+iOS Simulator is not yet supported for web DOM.
 
 iOS device selection is environment-driven:
 
