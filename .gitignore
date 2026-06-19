@@ -13,3 +13,4 @@ playwright-report/
 # suite is clone-and-run. The unpacked .app and the real-device .ipa stay out.
 assets/Astur.app/
 assets/*.ipa
+assets/Runner.app

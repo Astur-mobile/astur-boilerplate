@@ -9,28 +9,32 @@ npm install
 npx astur-mobile doctor
 ```
 
-> **Note:** This starter focuses on **React Native** (and native) apps. Astur also
-> supports **Flutter** — see the [main repo](https://github.com/Astur-mobile/Astur)
-> and the [Flutter & React Native guide](https://astur-mobile.github.io/Astur/frameworks/)
-> for Flutter setup. The starter tracks the latest published Astur
-> (`@astur-mobile/test: latest`), so a fresh `npm install` always pulls the current release.
+> **Note:** This starter includes React Native/native demo suites and optional
+> Flutter demo configs. It tracks the latest published Astur
+> (`@astur-mobile/test: latest`), so a fresh `npm install` always pulls the
+> current release.
 
 ## Layout
 
 | Path | What |
 | --- | --- |
-| `specs/` | Shared test files (login, forms, slider, swipe, drag & drop, tap laboratory, webview), the `fixtures.ts` app fixture, and `pages/` page objects — run on Android and iOS |
-| `config/android/` | Android Playwright configs (single-device + a parallel config) |
-| `config/ios/` | iOS Playwright config that runs the same shared specs on a simulator/device |
+| `tests/demo-app/` | Shared demo-app specs, fixtures, and page objects used across platform/framework configs |
+| `configs/android/` | Android React Native and Flutter Playwright configs |
+| `configs/ios/` | iOS React Native and Flutter Playwright configs |
+| `configs/mobile/` | Mixed-platform Playwright config for Android + iOS parallel runs |
 | `assets/` | Demo app binaries — committed so you can run immediately |
 
 ## Demo app
 
 These suites target the Astur demo app, which ships in `assets/`:
 
-- `assets/astur.demo.android.apk` — Android (used as-is)
+- `assets/astur.demo.android.apk` — Android (React Native build, used as-is)
 - `assets/astur.demo.ios.simulator.zip` — iOS simulator build. Unzip it once:
   `unzip -o assets/astur.demo.ios.simulator.zip -d assets` → `assets/Astur.app`
+- `assets/astur.demo.android_flutter.apk` — Android (Flutter build)
+- `assets/astur.demo.ios.simulator_flutter.zip` — iOS simulator (Flutter build).
+  Unzip once: `unzip -o assets/astur.demo.ios.simulator_flutter.zip -d assets` →
+  `assets/Runner.app`
 
 To test your **own** app instead, change `use.astur.app` in the relevant
 `playwright.config.ts` and update the locators in the specs.
@@ -45,6 +49,36 @@ npm run test:ios                # iOS simulator (iPhone 16 by default)
 npm run test:parallel           # Android + iOS concurrently
 npm run codegen:android:emulator  # record a new spec
 ```
+
+### Flutter
+
+The same specs drive the Flutter build of the demo app:
+
+```bash
+npm run test:ios:flutter        # iOS simulator (uses assets/Runner.app)
+ASTUR_FLUTTER_PROJECT=/path/to/flutter-app npm run test:android:flutter
+```
+
+Android Flutter reads the live widget tree through the Dart VM service, so it
+needs `ASTUR_FLUTTER_PROJECT` (the Flutter app's source dir with `pubspec.yaml`)
+and the `flutter` CLI on `PATH`. iOS Flutter reads the XCUITest accessibility
+tree — no extra setup beyond `assets/Runner.app`. A few specs are
+platform-limited on iOS Flutter (drag-and-drop, media-upload, webview).
+
+### WebViews (DOM)
+
+In-app WebViews are automated at the DOM level with `device.webContext()` — the
+same API for Flutter and React Native:
+
+```ts
+const web = await device.webContext();
+await web.getById('astur-email').fill('qa@astur.dev');
+await web.getByTestId('astur-submit').tap();
+```
+
+Works on Android (Chromium WebView/CDP) and real iOS devices
+(`brew install ios-webkit-debug-proxy`, `WKWebView.isInspectable = true`). The
+iOS Simulator is not yet supported for web DOM.
 
 iOS device selection is environment-driven:
 
