@@ -9,6 +9,12 @@ npm install
 npx astur-mobile doctor
 ```
 
+> **Note:** This starter focuses on **React Native** (and native) apps. Astur also
+> supports **Flutter** — see the [main repo](https://github.com/Astur-mobile/Astur)
+> and the [Flutter & React Native guide](https://astur-mobile.github.io/Astur/frameworks/)
+> for Flutter setup. The starter tracks the latest published Astur
+> (`@astur-mobile/test: latest`), so a fresh `npm install` always pulls the current release.
+
 ## Layout
 
 | Path | What |
