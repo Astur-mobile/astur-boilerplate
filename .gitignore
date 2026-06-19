@@ -1,4 +1,8 @@
 node_modules/
+# This starter tracks the latest published Astur (package.json uses `latest`).
+# A committed lockfile would pin an old version and defeat that — let npm resolve
+# `latest` fresh on every install.
+package-lock.json
 test-results/
 playwright-report/
 .playwright-cli/
