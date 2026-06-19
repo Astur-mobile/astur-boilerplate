@@ -13,8 +13,9 @@ npx astur-mobile doctor
 
 | Path | What |
 | --- | --- |
-| `android-native/` | Android suites: login, forms, slider, swipe, drag & drop, tap laboratory, webview, plus a parallel config |
-| `ios-native/` | iOS config that runs the shared Android-authored specs on a simulator/device |
+| `specs/` | Shared test files (login, forms, slider, swipe, drag & drop, tap laboratory, webview), the `fixtures.ts` app fixture, and `pages/` page objects — run on Android and iOS |
+| `config/android/` | Android Playwright configs (single-device + a parallel config) |
+| `config/ios/` | iOS Playwright config that runs the same shared specs on a simulator/device |
 | `assets/` | Demo app binaries — committed so you can run immediately |
 
 ## Demo app
