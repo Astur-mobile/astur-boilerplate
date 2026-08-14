@@ -39,6 +39,9 @@ The suite is split by user-facing functionality:
 - `webview.test.ts` covers native WebView navigation plus DOM interaction.
 - `native-locators.test.ts` covers platform-native selectors for the cases the cross-platform locators cannot express.
 - `network-observation.test.ts` covers `device.network` — asserting on the HTTP calls the app makes, not just what it renders. It asks `capabilities()` first and skips with a reason where observation is unavailable, so it is safe to run on every platform.
+- `visual-comparison.test.ts` covers `toHaveScreenshot()` — comparing an element against a committed baseline, and masking a region that is allowed to change. Requires a release newer than `@astur-mobile/test` 0.5.0-beta.4; the repository's `latest` dependency will resolve it once that release is published.
+
+  Its baselines live in `visual-comparison.test.ts-snapshots/`, one directory per device (`android-native-1080x2424`, `android-flutter-1080x2424`, `ios-native-393x852`). They were recorded on a Pixel 9 emulator and an iPhone 16 simulator. On a different device the first run writes new baselines and fails, telling you to check and commit them — that is the intended flow, not a broken test.
 
 Run one focused feature:
 
