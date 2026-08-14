@@ -30,9 +30,10 @@ The suite is split by user-facing functionality:
 - `login.test.ts` covers credentials and login feedback.
 - `forms.test.ts` covers text input, switch, checkbox, and form button state.
 - `forms-slider.test.ts` covers the form slider bar and value updates.
+- `keyboard-focus.test.ts` covers typing into the focused control and printable-character `pressKey` behavior. It requires `@astur-mobile/test` 0.5.0-beta.4 or newer; the repository's `latest` dependency will resolve it after that release is published.
 - `media-upload.test.ts` covers selecting a media file from the form screen.
 - `tap-laboratory.test.ts` covers single tap, double tap, and long press on Android. The current iOS demo IPA exposes the same counters, but XCTest double taps are reported by the app as two single taps on real hardware, so the iOS assertion records that platform behavior until the demo app gesture handler is updated.
-- `orientation-menu.test.ts` covers portrait/landscape rotation and the responsive menu state.
+- `orientation-menu.test.ts` verifies that a landscape smoke action always restores portrait for the next test.
 - `swipe.test.ts` covers carousel and vertical swipe behavior.
 - `drag-and-drop.test.ts` covers the drag puzzle.
 - `webview.test.ts` covers native WebView navigation plus DOM interaction.
