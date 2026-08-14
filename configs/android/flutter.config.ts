@@ -17,6 +17,15 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 export default defineConfig({
   testDir: resolve(repoRoot, 'tests/demo-app'),
+  // Deny-list, not an allow-list — a platform opts out, with a reason, so a
+  // newly added spec runs here by default instead of silently never running.
+  testIgnore: [
+    // A Flutter session reads its tree from the Dart VM, which only ever
+    // contains the app's own widgets. The system photo picker is a different
+    // app's UI, so it is structurally invisible here — the same exclusion
+    // already applies on Flutter iOS.
+    'media-upload.test.ts'
+  ],
   timeout: 240_000,
   fullyParallel: false,
   workers: 1,
