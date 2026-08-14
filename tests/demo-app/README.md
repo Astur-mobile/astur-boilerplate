@@ -36,6 +36,8 @@ The suite is split by user-facing functionality:
 - `swipe.test.ts` covers carousel and vertical swipe behavior.
 - `drag-and-drop.test.ts` covers the drag puzzle.
 - `webview.test.ts` covers native WebView navigation plus DOM interaction.
+- `native-locators.test.ts` covers platform-native selectors for the cases the cross-platform locators cannot express.
+- `network-observation.test.ts` covers `device.network` — asserting on the HTTP calls the app makes, not just what it renders. It asks `capabilities()` first and skips with a reason where observation is unavailable, so it is safe to run on every platform.
 
 Run one focused feature:
 

@@ -33,14 +33,16 @@ const iosDevice = iosDeviceKind === 'real'
 
 export default defineConfig({
   testDir: resolve(repoRoot, 'tests/demo-app'),
-  testMatch: [
-    'login.test.ts',
-    'forms.test.ts',
-    'forms-slider.test.ts',
-    'orientation-menu.test.ts',
-    'swipe.test.ts',
-    'drag-and-drop.test.ts',
-    'tap-laboratory.test.ts'
+  // Deny-list, not an allow-list. Every spec runs on every platform by default,
+  // exactly as the Android configs do; a platform only opts OUT, with a reason.
+  // An allow-list silently drops newly added specs — a new spec then appears to
+  // pass on iOS when it never ran at all.
+  testIgnore: [
+    // Native photo picker: system UI outside the app, not automatable here.
+    'media-upload.test.ts',
+    // WKWebView DOM needs ios-webkit-debug-proxy, which bridges physical
+    // devices only — no CDP transport on the simulator yet.
+    'webview.test.ts'
   ],
   timeout: 120_000,
   fullyParallel: false,

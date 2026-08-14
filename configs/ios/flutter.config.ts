@@ -31,13 +31,15 @@ const device = deviceId
 
 export default defineConfig({
   testDir: resolve(repoRoot, 'tests/demo-app'),
-  testMatch: [
-    'login.test.ts',
-    'forms.test.ts',
-    'forms-slider.test.ts',
-    'orientation-menu.test.ts',
-    'swipe.test.ts',
-    'tap-laboratory.test.ts'
+  // Deny-list, not an allow-list — see the RN iOS config for why.
+  testIgnore: [
+    // Native photo picker: system UI outside the app, not automatable here.
+    'media-upload.test.ts',
+    // WKWebView DOM needs ios-webkit-debug-proxy (physical devices only).
+    'webview.test.ts',
+    // Flutter renders its own drag affordances; the gesture does not map onto
+    // the native drag path the spec drives.
+    'drag-and-drop.test.ts'
   ],
   timeout: 180_000,
   fullyParallel: false,
