@@ -65,6 +65,27 @@ and the `flutter` CLI on `PATH`. iOS Flutter reads the XCUITest accessibility
 tree — no extra setup beyond `assets/Runner.app`. A few specs are
 platform-limited on iOS Flutter (drag-and-drop, media-upload, webview).
 
+### Network observation
+
+`device.network` reports the app's HTTP traffic. Coverage differs by build, so a
+spec asks `capabilities()` first and skips with a reason rather than failing —
+which is why the release suite above passes without observing anything.
+
+```bash
+npm run test:android:rn-debug   # React Native debug build attached to Metro
+npm run test:android:flutter    # Flutter debug/profile build
+```
+
+React Native's CDP network reporter is compiled out of release builds, so the
+shipped `assets/astur.demo.android.apk` cannot observe traffic. Run a **debug**
+build against Metro instead — in the demo-app repo, `npx expo start` then
+`npx expo run:android`. Coverage is `XMLHttpRequest` traffic (React Native's own
+`fetch` polyfill and `axios` included); **Expo's native `fetch` is invisible**,
+because it bypasses React Native's networking module entirely.
+
+Flutter reads the Dart VM's HTTP profiler and likewise needs a debug or profile
+build — a release AOT build publishes no VM service on either platform.
+
 ### WebViews (DOM)
 
 In-app WebViews are automated at the DOM level with `device.webContext()` — the
