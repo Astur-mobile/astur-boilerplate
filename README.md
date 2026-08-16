@@ -73,15 +73,20 @@ which is why the release suite above passes without observing anything.
 
 ```bash
 npm run test:android:rn-debug   # React Native debug build attached to Metro
+npm run test:ios:rn-debug
 npm run test:android:flutter    # Flutter debug/profile build
+npm run test:ios:flutter
 ```
 
 React Native's CDP network reporter is compiled out of release builds, so the
 shipped `assets/astur.demo.android.apk` cannot observe traffic. Run a **debug**
 build against Metro instead — in the demo-app repo, `npx expo start` then
-`npx expo run:android`. Coverage is `XMLHttpRequest` traffic (React Native's own
-`fetch` polyfill and `axios` included); **Expo's native `fetch` is invisible**,
-because it bypasses React Native's networking module entirely.
+`npx expo run:android` (or `npx expo run:ios`; iOS needs no app-side change).
+
+Coverage is `XMLHttpRequest` traffic — React Native's own `fetch` polyfill and
+`axios` included, because both bottom out there. **Expo's native `fetch` is
+invisible**: it is implemented natively and bypasses React Native's networking
+module entirely.
 
 Flutter reads the Dart VM's HTTP profiler and likewise needs a debug or profile
 build — a release AOT build publishes no VM service on either platform.
