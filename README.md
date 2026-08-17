@@ -91,6 +91,26 @@ module entirely.
 Flutter reads the Dart VM's HTTP profiler and likewise needs a debug or profile
 build — a release AOT build publishes no VM service on either platform.
 
+### Visual comparison
+
+`toHaveScreenshot()` compares an element or the whole screen against a stored
+baseline. Baselines are kept per platform, renderer, and screen size:
+
+```
+tests/demo-app/visual-comparison.test.ts-snapshots/
+  android-native-1080x2424/   android-flutter-1080x2424/
+  ios-native-393x852/         ios-flutter-393x852/
+```
+
+The first run for a new device writes a baseline and **fails** on purpose — a
+run that quietly creates one has asserted nothing. Check the image, commit it,
+and the next run compares. To accept an intended change, re-run with `-u`.
+
+> **Recording iOS baselines:** pass `ASTUR_IOS_APP_FORCE_INSTALL=1`. iOS skips
+> installing when the bundle id is already present, and the React Native and
+> Flutter demo builds share `com.astur.demo` — so without it you can record one
+> build's pixels under the other's name. Android configs already force-install.
+
 ### WebViews (DOM)
 
 In-app WebViews are automated at the DOM level with `device.webContext()` — the
