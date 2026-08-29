@@ -4,7 +4,7 @@ import { defineConfig } from '@astur-mobile/test';
 
 /**
  * Mobile **web** suite: drives a page in the device's browser, rather than an
- * app. See `examples/specs/browser.test.ts`.
+ * app. See `tests/demo-app/browser.test.ts`.
  *
  * No `app` is configured, which makes this a browser-only session — Astur skips
  * app install, and treats the native agent as optional rather than required.
@@ -22,7 +22,7 @@ export default defineConfig({
   workers: 1,
   outputDir: resolve(repoRoot, 'test-results/ios-browser'),
   reporter: [['list']],
-  // Serves examples/assets/web on the host. The device reaches it at 10.0.2.2
+  // Serves assets/web on the host. The device reaches it at 10.0.2.2
   // (Android emulator) or 127.0.0.1 (iOS simulator) — see the spec.
   webServer: {
     command: `npx --yes http-server "${resolve(repoRoot, 'assets/web')}" -p ${PORT} -s`,

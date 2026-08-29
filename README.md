@@ -133,6 +133,48 @@ ASTUR_IOS_DEVICE_KIND=real ASTUR_IOS_DEVICE_ID=<udid> npm run test:ios
 ASTUR_IOS_APP_PATH=assets/astur.demo.ios.ipa npm run test:ios:real
 ```
 
+### Mobile web (browser)
+
+`device.browser` drives a page in the device's **own browser** — Chrome on
+Android, Safari on iOS — rather than a WebView inside an app. It is the other
+half of the web story above: `device.webContext()` tests your app's web screens,
+`device.browser` tests a website on real mobile browsers.
+
+```bash
+npm run test:android:browser
+npm run test:ios:browser
+```
+
+> **Not in a published release yet.** The browser suite needs a release newer
+> than `@astur-mobile/test` 0.5.0-beta.5. Until that is on npm the two scripts
+> above will fail on `device.browser` being undefined — the specs and configs are
+> here so they arrive with the release, not after it.
+
+These configs set `browser` and no `app`, which makes a **browser-only session**:
+Astur skips app install and treats the native agent as optional. On iOS that is
+the difference between opening a page and needing an Xcode signing identity
+first — so this suite needs no demo binary at all.
+
+```ts
+use: { astur: { platform: 'android', browser: { engine: 'chrome' } } }
+```
+
+The page under test is served from `assets/web/` by the config's `webServer`, so
+the suite runs offline. Android needs Chrome **past its first-run screen** — until
+that welcome flow is done Chrome publishes no debugging socket, reported as
+`BROWSER_FIRST_RUN_PENDING` rather than a timeout. iOS needs
+`ios-webkit-debug-proxy`; the simulator needs nothing else.
+
+Worth knowing before you build a suite on it: a tab is **not** a Playwright
+browser context, so cookies and `localStorage` are shared across the profile —
+clear what a test depends on. iOS reuses one tab (WebKit exposes no tab
+lifecycle), the browser's own chrome is native UI rather than page content, and
+the real-iOS path is written but not yet verified on hardware.
+
+Playwright already tests mobile web well through device emulation, and it is
+faster in CI. Reach for this when emulation is not what you need: a real mobile
+browser, on the same device pool, in the same run as your native suite.
+
 ## Run from VS Code (Playwright play button)
 
 Astur is built on Playwright Test, so the **VS Code Playwright extension** works

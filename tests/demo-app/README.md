@@ -37,6 +37,11 @@ The suite is split by user-facing functionality:
 - `swipe.test.ts` covers carousel and vertical swipe behavior.
 - `drag-and-drop.test.ts` covers the drag puzzle.
 - `webview.test.ts` covers native WebView navigation plus DOM interaction.
+- `browser.test.ts` covers `device.browser` — driving a page in the device's own browser (Chrome on Android, Safari on iOS) rather than a WebView inside an app. It runs under its own configs (`configs/android/browser.config.ts`, `configs/ios/browser.config.ts`), which set `browser` and no `app`, so the session installs nothing and needs no demo binary. Requires a release newer than `@astur-mobile/test` 0.5.0-beta.5; the repository's `latest` dependency will resolve it once that release is published.
+
+  The page under test is served from `assets/web/` by the config's `webServer`, so the suite stays offline — no public site can change its markup and fail a run. The device reaches the host at `10.0.2.2` from an Android emulator and `127.0.0.1` from an iOS simulator; the spec spells that difference out rather than hiding it.
+
+  Two things to know before building on it. A tab is **not** a Playwright browser context — cookies and `localStorage` belong to the browser profile and are shared, so clear what a test depends on rather than assuming a fresh tab did. And Chrome must be past its first-run welcome screen, or it publishes no debugging socket at all; Astur reports that as `BROWSER_FIRST_RUN_PENDING` instead of timing out.
 - `native-locators.test.ts` covers platform-native selectors for the cases the cross-platform locators cannot express.
 - `network-observation.test.ts` covers `device.network` — asserting on the HTTP calls the app makes, not just what it renders. It asks `capabilities()` first and skips with a reason where observation is unavailable, so it is safe to run on every platform.
 - `visual-comparison.test.ts` covers `toHaveScreenshot()` — comparing an element against a committed baseline, and masking a region that is allowed to change. Requires a release newer than `@astur-mobile/test` 0.5.0-beta.4; the repository's `latest` dependency will resolve it once that release is published.
