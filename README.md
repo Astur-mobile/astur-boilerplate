@@ -111,6 +111,24 @@ and the next run compares. To accept an intended change, re-run with `-u`.
 > Flutter demo builds share `com.astur.demo` — so without it you can record one
 > build's pixels under the other's name. Android configs already force-install.
 
+### Locators
+
+Locators compose, so a screen of repeated rows can be narrowed to the one the
+test means:
+
+```ts
+const row = device.getByType('Cell').filter({ hasText: 'Rye' });
+await row.getByRole('button', { name: 'Add' }).tap();
+```
+
+Scope to a parent, `filter({ hasText, hasNotText, has, hasNot })`, combine with
+`and()` / `or()`, and pick with `first()` / `last()` / `nth(i)`.
+`tests/demo-app/locator-composition.test.ts` exercises all of it.
+
+> Needs a release newer than `@astur-mobile/test` 0.6.0-beta. Until that is on
+> npm the spec is present but will not typecheck or run — it is here so it
+> arrives with the release rather than after it.
+
 ### WebViews (DOM)
 
 In-app WebViews are automated at the DOM level with `device.webContext()` — the
@@ -144,11 +162,6 @@ half of the web story above: `device.webContext()` tests your app's web screens,
 npm run test:android:browser
 npm run test:ios:browser
 ```
-
-> **Not in a published release yet.** The browser suite needs a release newer
-> than `@astur-mobile/test` 0.5.0-beta.5. Until that is on npm the two scripts
-> above will fail on `device.browser` being undefined — the specs and configs are
-> here so they arrive with the release, not after it.
 
 These configs set `browser` and no `app`, which makes a **browser-only session**:
 Astur skips app install and treats the native agent as optional. On iOS that is
